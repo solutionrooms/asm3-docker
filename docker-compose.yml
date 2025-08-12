@@ -1,0 +1,110 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/docker/postgres/init.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    networks:
+      - asm3_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  asm3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${ASM3_PORT:-8080}:5000"
+    environment:
+      - ASM3_CONF=/etc/asm3.conf
+    volumes:
+      - ./asm3.conf:/etc/asm3.conf:ro
+      - asm3_media:/var/lib/asm3/media
+      - asm3_cache:/tmp/asm_disk_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - asm3_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${REDIS_PORT:-6379}:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - asm3_network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+  # Optional: Memcached for session caching
+  memcached:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    ports:
+      - "${MEMCACHED_PORT:-11211}:11211"
+    command: memcached -m 64
+    networks:
+      - asm3_network
+
+  # Cron service for daily tasks
+  asm3_cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASM3_CONF=/etc/asm3.conf
+    volumes:
+      - ./asm3.conf:/etc/asm3.conf:ro
+      - asm3_media:/var/lib/asm3/media
+    depends_on:
+      - asm3
+      - postgres
+    networks:
+      - asm3_network
+    command: >
+      sh -c "
+        while true; do
+          sleep 3600;
+          echo 'Running daily ASM3 maintenance tasks...';
+          cd /app/src && python3 cron.py all;
+        done
+      "
+
+volumes:
+  postgres_data:
+    driver: local
+  asm3_media:
+    driver: local
+  asm3_cache:
+    driver: local
+  # redis_data:
+  #   driver: local
+
+networks:
+  asm3_network:
+    driver: bridge

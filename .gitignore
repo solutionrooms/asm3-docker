@@ -4,6 +4,7 @@ BREAKING_CHANGES
 build
 node_modules
 tags
+.env
 .idea
 .idea/workspace.xml
 .vscode
