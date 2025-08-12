@@ -54,8 +54,11 @@ RUN cd $ASM3_ROOT && \
     echo "#!/usr/bin/env python3" > src/asm3/__version__.py && \
     echo "VERSION = \"50 [$(date)]\"" >> src/asm3/__version__.py && \
     echo "BUILD = \"$(date +%m%d%H%M%S)\"" >> src/asm3/__version__.py && \
-    make rollup && \
-    rm -rf node_modules
+    make rollup
+
+# Clean up node_modules in production (keep for development)
+ARG NODE_ENV=production
+RUN if [ "$NODE_ENV" = "production" ] ; then rm -rf node_modules ; fi
 
 # Create necessary directories
 RUN mkdir -p /var/log \

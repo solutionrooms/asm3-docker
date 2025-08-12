@@ -150,3 +150,36 @@ For production use:
 4. **Monitor logs** and set up log rotation
 5. **Update** `base_url` and `service_url` in `asm3.conf`
 6. **Enable email** error reporting in `asm3.conf`
+
+### Critical Production Steps
+
+**IMPORTANT**: After initial deployment, you must build the JavaScript bundles:
+
+```bash
+# Install Node dependencies and build frontend assets
+docker compose exec asm3 sh -c "cd /app && npm install"
+docker compose exec asm3 sh -c "cd /app && make rollup"
+
+# Restart to ensure all assets are loaded
+docker compose restart asm3
+```
+
+**Why this is needed**: The current Dockerfile removes `node_modules` after build, but the volume mount in docker-compose.yml overrides the generated assets. This step ensures the JavaScript bundles are available for the web interface.
+
+**Alternative approach for automated deployments**:
+```bash
+# Build assets before starting containers
+npm install
+make rollup
+docker compose up -d --build
+```
+
+### Environment Configuration for Production
+
+Update your `.env` file for production URLs:
+
+```bash
+# Production URLs (update these to your domain)
+ASM3_BASE_URL=https://yourdomain.com
+ASM3_SERVICE_URL=https://yourdomain.com/service
+```

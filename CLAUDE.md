@@ -33,6 +33,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Copy `.env.example` to `.env` and customize before first run
 - Access ASM3 at http://localhost:8090 (default port)
 
+**Production Deployment Requirements:**
+- After deployment, run: `docker compose exec asm3 sh -c "cd /app && npm install && make rollup"`
+- Ensure `src/asm3/__version__.py` exists (created automatically during Docker build)
+- Update `.env` with production URLs before deployment
+
 ## Architecture Overview
 
 ASM3 is a Python web application for animal shelter management with the following key architectural components:
