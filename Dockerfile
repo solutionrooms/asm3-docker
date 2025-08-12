@@ -50,7 +50,9 @@ COPY . $ASM3_ROOT/
 # Generate version file and build assets
 RUN cd $ASM3_ROOT && \
     npm install && \
-    make version && \
+    echo "#!/usr/bin/env python3" > src/asm3/__version__.py && \
+    echo "VERSION = \"50 [$(date)]\"" >> src/asm3/__version__.py && \
+    echo "BUILD = \"$(date +%m%d%H%M%S)\"" >> src/asm3/__version__.py && \
     make rollup && \
     rm -rf node_modules
 
