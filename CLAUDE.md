@@ -31,6 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `docker compose logs -f asm3` - View ASM3 application logs
 - `docker compose exec asm3 sh -c "cd /app/src && python3 cron.py all"` - Run maintenance tasks in container
 - Copy `.env.example` to `.env` and customize before first run
+- Access ASM3 at http://localhost:8090 (default port)
 
 ## Architecture Overview
 

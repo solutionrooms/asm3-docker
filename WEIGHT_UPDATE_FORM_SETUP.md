@@ -78,12 +78,12 @@ Add the following fields in order:
 
 The form will be available at:
 ```
-https://your-asm3-site.com/onlineform/{form_id}/weight_update
+http://localhost:8090/onlineform/{form_id}/weight_update
 ```
 
 Or use the generic form URL:
 ```
-https://your-asm3-site.com/onlineform/weight_update
+http://localhost:8090/onlineform/weight_update
 ```
 
 ### Step 5: Test the Form
