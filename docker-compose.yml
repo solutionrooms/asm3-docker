@@ -28,8 +28,20 @@ services:
       - "${ASM3_PORT:-8090}:5000"
     environment:
       - ASM3_CONF=/etc/asm3.conf
+      # Application URLs
+      - ASM3_BASE_URL=${ASM3_BASE_URL}
+      - ASM3_SERVICE_URL=${ASM3_SERVICE_URL}
+      # SMTP Configuration
+      - ASM3_ADMIN_EMAIL=${ASM3_ADMIN_EMAIL}
+      - ASM3_FROM_ADDRESS=${ASM3_FROM_ADDRESS}
+      - ASM3_SMTP_HOST=${ASM3_SMTP_HOST}
+      - ASM3_SMTP_PORT=${ASM3_SMTP_PORT}
+      - ASM3_SMTP_USERNAME=${ASM3_SMTP_USERNAME}
+      - ASM3_SMTP_PASSWORD=${ASM3_SMTP_PASSWORD}
+      - ASM3_SMTP_TLS=${ASM3_SMTP_TLS:-true}
+      - ASM3_USE_SENDMAIL=${ASM3_USE_SENDMAIL:-false}
     volumes:
-      - ./asm3.conf:/etc/asm3.conf:ro
+      - ./asm3.conf:/app/asm3.conf:ro
       - asm3_media:/var/lib/asm3/media
       - asm3_cache:/tmp/asm_disk_cache
     depends_on:
@@ -78,8 +90,20 @@ services:
     restart: unless-stopped
     environment:
       - ASM3_CONF=/etc/asm3.conf
+      # Application URLs
+      - ASM3_BASE_URL=${ASM3_BASE_URL}
+      - ASM3_SERVICE_URL=${ASM3_SERVICE_URL}
+      # SMTP Configuration for cron tasks
+      - ASM3_ADMIN_EMAIL=${ASM3_ADMIN_EMAIL}
+      - ASM3_FROM_ADDRESS=${ASM3_FROM_ADDRESS}
+      - ASM3_SMTP_HOST=${ASM3_SMTP_HOST}
+      - ASM3_SMTP_PORT=${ASM3_SMTP_PORT}
+      - ASM3_SMTP_USERNAME=${ASM3_SMTP_USERNAME}
+      - ASM3_SMTP_PASSWORD=${ASM3_SMTP_PASSWORD}
+      - ASM3_SMTP_TLS=${ASM3_SMTP_TLS:-true}
+      - ASM3_USE_SENDMAIL=${ASM3_USE_SENDMAIL:-false}
     volumes:
-      - ./asm3.conf:/etc/asm3.conf:ro
+      - ./asm3.conf:/app/asm3.conf:ro
       - asm3_media:/var/lib/asm3/media
     depends_on:
       - asm3

@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     # Core dependencies
     make \
     curl \
+    gettext-base \
     # Python dependencies for ASM3
     python3-dev \
     python3-pip \
@@ -61,9 +62,20 @@ RUN mkdir -p /var/log \
     && mkdir -p /tmp/asm_disk_cache \
     && chmod 755 /tmp/asm_disk_cache
 
-# Create a startup script
+# Create a startup script with environment variable substitution
 RUN echo '#!/bin/bash\n\
 set -e\n\
+\n\
+# Generate config file with environment variables\n\
+if [ -f /app/asm3.conf ]; then\n\
+    echo "Generating configuration with environment variables..."\n\
+    envsubst < /app/asm3.conf > /etc/asm3.conf\n\
+    echo "URLs configured for: $ASM3_BASE_URL"\n\
+    echo "SMTP configured with host: $ASM3_SMTP_HOST"\n\
+else\n\
+    echo "No config file found!"\n\
+    exit 1\n\
+fi\n\
 \n\
 # Wait for database to be ready\n\
 echo "Waiting for database..."\n\
