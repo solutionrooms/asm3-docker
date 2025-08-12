@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Hedgehog Form URL Parameters</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .test-link { display: block; margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; text-decoration: none; color: #333; }
+        .test-link:hover { background: #e0e0e0; }
+        .note { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🦔 Hedgehog Care Form - URL Parameter Tests</h1>
+    
+    <div class="note">
+        <strong>Note:</strong> These are test links to demonstrate how the URL parameters work. 
+        Replace the base URL with your actual ASM3 domain.
+    </div>
+    
+    <h2>Test Links with Different Parameter Names:</h2>
+    
+    <a href="src/media/templates/hedgehog_care_form.html?hedgehog=Spike" class="test-link">
+        🦔 <strong>Spike</strong> - using ?hedgehog=Spike
+    </a>
+    
+    <a href="src/media/templates/hedgehog_care_form.html?animal=Luna" class="test-link">
+        🦔 <strong>Luna</strong> - using ?animal=Luna  
+    </a>
+    
+    <a href="src/media/templates/hedgehog_care_form.html?name=Hazel" class="test-link">
+        🦔 <strong>Hazel</strong> - using ?name=Hazel
+    </a>
+    
+    <a href="src/media/templates/hedgehog_care_form.html?animalname=Sonic" class="test-link">
+        🦔 <strong>Sonic</strong> - using ?animalname=Sonic
+    </a>
+    
+    <a href="src/media/templates/hedgehog_care_form.html?hedgehog=Rosie%20Mae" class="test-link">
+        🦔 <strong>Rosie Mae</strong> - using ?hedgehog=Rosie%20Mae (URL encoded space)
+    </a>
+    
+    <h2>Error Test:</h2>
+    
+    <a href="src/media/templates/hedgehog_care_form.html" class="test-link" style="background: #f8d7da; border-left: 4px solid #dc3545;">
+        ❌ <strong>No Parameter</strong> - should show error
+    </a>
+    
+    <h2>Real ASM3 URLs (Example Format):</h2>
+    
+    <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
+        <p><strong>Replace with your actual ASM3 domain:</strong></p>
+        <code>https://asm.fridaydigital.co.uk/service?method=online_form_html&formid=X&hedgehog=Spike</code><br>
+        <small>Where X is your form ID from ASM3</small>
+    </div>
+    
+    <h2>JavaScript Test Console:</h2>
+    <textarea id="console" rows="10" style="width: 100%; font-family: monospace; background: #f8f9fa;"></textarea>
+    
+    <script>
+        // Test the URL parameter parsing function
+        function testUrlParsing() {
+            const log = document.getElementById('console');
+            log.value = '';
+            
+            function logTest(message) {
+                log.value += message + '\n';
+            }
+            
+            logTest('=== Testing URL Parameter Parsing ===');
+            logTest('Current URL: ' + window.location.href);
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            logTest('\nSearching for hedgehog parameters:');
+            logTest('hedgehog: ' + (urlParams.get('hedgehog') || 'null'));
+            logTest('animal: ' + (urlParams.get('animal') || 'null'));
+            logTest('name: ' + (urlParams.get('name') || 'null'));
+            logTest('animalname: ' + (urlParams.get('animalname') || 'null'));
+            
+            const hedgehogName = urlParams.get('hedgehog') || 
+                               urlParams.get('animal') || 
+                               urlParams.get('name') ||
+                               urlParams.get('animalname');
+                               
+            if (hedgehogName) {
+                logTest('\n✅ SUCCESS: Found hedgehog name: "' + hedgehogName + '"');
+            } else {
+                logTest('\n❌ ERROR: No hedgehog name found in URL');
+            }
+            
+            logTest('\n=== Test Complete ===');
+        }
+        
+        // Run test when page loads
+        window.addEventListener('load', testUrlParsing);
+    </script>
+</body>
+</html>

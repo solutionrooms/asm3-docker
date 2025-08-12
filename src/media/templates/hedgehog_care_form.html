@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hedgehog Daily Care Form</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+            line-height: 1.5;
+        }
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        .hedgehog-icon {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 1em;
+        }
+        input[type="text"], input[type="number"], input[type="date"], 
+        input[type="datetime-local"], input[type="file"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input[type="number"] {
+            background-color: #f8f9fa;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        .required {
+            color: #e74c3c;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .info-text {
+            background: linear-gradient(135deg, #e8f6ff, #d4edff);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+            font-size: 0.95em;
+        }
+        .help-text {
+            font-size: 0.875em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .photo-upload-area {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: #fafbfc;
+            transition: all 0.3s ease;
+        }
+        .photo-upload-area:hover {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+        }
+        .photo-upload-area.dragover {
+            border-color: #3498db;
+            background-color: #e8f6ff;
+        }
+        .camera-icon {
+            font-size: 2em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .file-input-label:hover {
+            background-color: #2980b9;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .weight-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .weight-unit {
+            background-color: #ecf0f1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            border: 2px solid #e9ecef;
+        }
+        .current-time {
+            background-color: #e8f5e8;
+            border-color: #27ae60;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .form-container {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .weight-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .weight-unit {
+                text-align: center;
+            }
+        }
+        
+        /* Touch-friendly mobile inputs */
+        @media (pointer: coarse) {
+            input, select, .file-input-label {
+                min-height: 48px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="hedgehog-icon">🦔</div>
+        <h1>Hedgehog Daily Care</h1>
+        
+        <div class="info-text">
+            <strong>📋 Daily Care Form</strong><br>
+            Record weight, upload photos, and track care for hedgehogs. This information helps monitor health and growth patterns.
+        </div>
+
+        <form method="post" action="/service" enctype="multipart/form-data">
+            <!-- Hidden fields for form processing -->
+            <input type="hidden" name="method" value="online_form_post">
+            <input type="hidden" name="account" value="{DATABASE_ALIAS}">
+            <input type="hidden" name="formname" value="hedgehog_care">
+            
+            <!-- Hedgehog Name (from URL) -->
+            <div class="form-group">
+                <label for="animalname">🦔 Hedgehog <span class="required">*</span></label>
+                <input type="text" 
+                       name="animalname" 
+                       id="animalname" 
+                       readonly
+                       required
+                       placeholder="Hedgehog name will be loaded from URL"
+                       style="background-color: #e9ecef; cursor: not-allowed;">
+                <div class="help-text" id="hedgehog-help">Hedgehog name will be loaded automatically from the URL</div>
+            </div>
+
+            <!-- Current Weight in Grams -->
+            <div class="form-group">
+                <label for="weight">⚖️ Current Weight <span class="required">*</span></label>
+                <div class="weight-input-group">
+                    <input type="number" 
+                           name="weight" 
+                           id="weight" 
+                           min="0" 
+                           max="2000"
+                           step="1" 
+                           placeholder="Enter weight"
+                           required>
+                    <div class="weight-unit">grams</div>
+                </div>
+                <div class="help-text">Enter the hedgehog's weight in grams (e.g. 450)</div>
+            </div>
+
+            <!-- Date and Time of Care -->
+            <div class="form-group">
+                <label for="caretime">📅 Date & Time</label>
+                <input type="datetime-local" 
+                       name="caretime" 
+                       id="caretime"
+                       class="current-time">
+                <div class="help-text">Date and time of weighing and photo (defaults to now)</div>
+            </div>
+
+            <!-- Photo Upload -->
+            <div class="form-group">
+                <label for="careimage">📸 Daily Photo <span class="required">*</span></label>
+                <input type="hidden" name="careimage" value="" />
+                <div class="photo-upload-area">
+                    <div class="camera-icon">📷</div>
+                    <label for="careimage_file" class="file-input-label">
+                        Take Photo / Choose File
+                    </label>
+                    <input class="asm-onlineform-image" 
+                           type="file" 
+                           id="careimage_file" 
+                           data-name="careimage"
+                           data-required="required"
+                           accept="image/*"
+                           capture="environment">
+                    <div class="help-text" style="margin-top: 10px;">
+                        Take a photo of the hedgehog or select from your device
+                    </div>
+                </div>
+            </div>
+
+            <!-- Volunteer/Staff Name -->
+            <div class="form-group">
+                <label for="volunteer">👤 Your Name</label>
+                <input type="text" 
+                       name="volunteer" 
+                       id="volunteer" 
+                       placeholder="Enter your name"
+                       maxlength="100">
+                <div class="help-text">Your name for our records</div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+                <label for="carenotes">📝 Notes (Optional)</label>
+                <input type="text" 
+                       name="carenotes" 
+                       id="carenotes" 
+                       placeholder="Any observations, behavior notes, or concerns"
+                       maxlength="500">
+                <div class="help-text">Note behavior, health, eating, activity level, etc.</div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                📋 Submit Care Record
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Load and include the standard ASM3 online form JavaScript
+        document.write('<script src="/static/js/onlineform_extra.js"><\/script>');
+        
+        // Extract hedgehog name from URL parameters
+        function getHedgehogNameFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Try multiple possible parameter names
+            let hedgehogName = urlParams.get('hedgehog') || 
+                              urlParams.get('animal') || 
+                              urlParams.get('name') ||
+                              urlParams.get('animalname');
+            
+            if (hedgehogName) {
+                // Decode URL encoding and clean up the name
+                hedgehogName = decodeURIComponent(hedgehogName).trim();
+                document.getElementById('animalname').value = hedgehogName;
+                document.getElementById('hedgehog-help').textContent = 
+                    `Caring for: ${hedgehogName}`;
+                
+                // Update form title to include hedgehog name
+                document.querySelector('h1').textContent = 
+                    `Daily Care for ${hedgehogName}`;
+                    
+                return true;
+            } else {
+                // No hedgehog name in URL - show error
+                document.getElementById('animalname').placeholder = 
+                    'ERROR: No hedgehog specified in URL';
+                document.getElementById('hedgehog-help').innerHTML = 
+                    '<strong style="color: #e74c3c;">Error: This form requires a hedgehog name in the URL.</strong><br>' +
+                    'Example: ?hedgehog=Spike or ?animal=Luna';
+                document.getElementById('hedgehog-help').style.color = '#e74c3c';
+                return false;
+            }
+        }
+        
+        // Set current date and time as default
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('caretime').value = now.toISOString().slice(0,16);
+        
+        // Load hedgehog name from URL
+        const hasHedgehog = getHedgehogNameFromUrl();
+        
+        // Add drag and drop functionality for photo upload
+        const photoArea = document.querySelector('.photo-upload-area');
+        const fileInput = document.getElementById('careimage_file');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            photoArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            photoArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            photoArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            photoArea.classList.add('dragover');
+        }
+        
+        function unhighlight(e) {
+            photoArea.classList.remove('dragover');
+        }
+        
+        photoArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            
+            // Trigger the change event to process the image
+            const event = new Event('change', { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+        
+        // Mobile-friendly number input for weight
+        const weightInput = document.getElementById('weight');
+        weightInput.addEventListener('input', function() {
+            // Remove any non-digit characters except decimal point
+            this.value = this.value.replace(/[^\d]/g, '');
+        });
+        
+        // Auto-focus on weight field if hedgehog is loaded, otherwise show error
+        if (hasHedgehog) {
+            document.getElementById('weight').focus();
+        } else {
+            // Disable form submission if no hedgehog name
+            document.querySelector('.submit-btn').disabled = true;
+            document.querySelector('.submit-btn').textContent = 'ERROR: No Hedgehog Specified';
+            document.querySelector('.submit-btn').style.backgroundColor = '#e74c3c';
+        }
+    </script>
+</body>
+</html>

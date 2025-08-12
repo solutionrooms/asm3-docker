@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hedgehog Daily Care</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .readonly {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background: #2980b9;
+        }
+        .submit-btn:disabled {
+            background: #e74c3c;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px;
+            background: #f8d7da;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .photo-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        .help-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div style="text-align: center; font-size: 2em; margin-bottom: 10px;">🦔</div>
+        <h1 id="form-title">Hedgehog Daily Care</h1>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+        <div id="success-message" class="success" style="display: none;"></div>
+        
+        <form id="hedgehog-form">
+            <div class="form-group">
+                <label for="hedgehog-name">🦔 Hedgehog:</label>
+                <input type="text" id="hedgehog-name" class="readonly" readonly>
+                <div class="help-text" id="hedgehog-help"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="weight">⚖️ Weight (grams):</label>
+                <input type="number" id="weight" min="0" max="2000" step="1" placeholder="Enter weight in grams" required>
+                <div class="help-text">Enter weight in grams (e.g., 450)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="care-date">📅 Date & Time:</label>
+                <input type="datetime-local" id="care-date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="photo">📸 Photo:</label>
+                <input type="file" id="photo" accept="image/*" capture="environment" required>
+                <img id="photo-preview" class="photo-preview" alt="Photo preview">
+                <div class="help-text">Take a photo of the hedgehog</div>
+            </div>
+
+            <div class="form-group">
+                <label for="volunteer">👤 Your Name:</label>
+                <input type="text" id="volunteer" placeholder="Enter your name">
+            </div>
+
+            <div class="form-group">
+                <label for="notes">📝 Notes:</label>
+                <textarea id="notes" rows="3" placeholder="Any observations, behavior notes, or concerns"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submit-btn">📋 Submit Care Record</button>
+        </form>
+    </div>
+
+    <script>
+        // Get hedgehog name from URL
+        function getHedgehogName() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('hedgehog') || 
+                   urlParams.get('animal') || 
+                   urlParams.get('name') ||
+                   urlParams.get('animalname');
+        }
+
+        // Set current date/time
+        function setCurrentDateTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('care-date').value = now.toISOString().slice(0,16);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // Initialize form
+        function initializeForm() {
+            const hedgehogName = getHedgehogName();
+            const nameInput = document.getElementById('hedgehog-name');
+            const helpText = document.getElementById('hedgehog-help');
+            const submitBtn = document.getElementById('submit-btn');
+            const formTitle = document.getElementById('form-title');
+
+            if (hedgehogName) {
+                nameInput.value = hedgehogName;
+                helpText.textContent = `Recording care for: ${hedgehogName}`;
+                formTitle.textContent = `Daily Care for ${hedgehogName}`;
+                document.getElementById('weight').focus();
+            } else {
+                showError('No hedgehog specified in URL. Add ?hedgehog=NAME to the URL.');
+                nameInput.placeholder = 'ERROR: No hedgehog specified';
+                helpText.textContent = 'Example: ?hedgehog=Spike';
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'ERROR: No Hedgehog Specified';
+            }
+
+            setCurrentDateTime();
+        }
+
+        // Handle photo preview
+        document.getElementById('photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photo-preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('hedgehog-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                hedgehog: document.getElementById('hedgehog-name').value,
+                weight: document.getElementById('weight').value,
+                date: document.getElementById('care-date').value,
+                volunteer: document.getElementById('volunteer').value,
+                notes: document.getElementById('notes').value,
+                photo: document.getElementById('photo').files[0]?.name || 'No photo'
+            };
+
+            // This is where you'd normally send to ASM3
+            // For now, just show the collected data
+            showSuccess('Care record collected! (This is a demo - data not actually saved)');
+            
+            console.log('Care record data:', formData);
+            
+            // Could send to ASM3 via:
+            // fetch('/service', { method: 'POST', ... })
+        });
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeForm);
+    </script>
+</body>
+</html>

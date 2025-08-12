@@ -44,6 +44,12 @@ services:
       - ./asm3.conf:/app/asm3.conf:ro
       - asm3_media:/var/lib/asm3/media
       - asm3_cache:/tmp/asm_disk_cache
+      # Mount source code for live development - changes reflected immediately!
+      - ./src:/app/src:ro
+      # Mount static files for live updates
+      - ./src/static:/app/src/static
+      # Mount media templates for live updates
+      - ./src/media:/app/src/media
     depends_on:
       postgres:
         condition: service_healthy
@@ -105,6 +111,8 @@ services:
     volumes:
       - ./asm3.conf:/app/asm3.conf:ro
       - asm3_media:/var/lib/asm3/media
+      # Mount source code for live development
+      - ./src:/app/src:ro
     depends_on:
       - asm3
       - postgres

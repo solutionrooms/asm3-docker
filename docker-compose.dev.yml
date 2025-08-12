@@ -1,0 +1,26 @@
+# Development override for live code reloading
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  asm3:
+    volumes:
+      # Mount entire source tree for development - no rebuilds needed!
+      - ./src:/app/src
+      # Override static files specifically for immediate updates
+      - ./src/static:/app/src/static
+      - ./src/media:/app/src/media
+      # Mount locales for translation updates
+      - ./src/asm3/locales:/app/src/asm3/locales
+      # Mount any new templates or forms
+      - ./src/media/templates:/app/src/media/templates
+    environment:
+      # Enable Python development mode for better error messages
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    # Optional: automatically restart container if main.py changes
+    # restart: unless-stopped
+
+  asm3_cron:
+    volumes:
+      # Same live mounting for cron service
+      - ./src:/app/src

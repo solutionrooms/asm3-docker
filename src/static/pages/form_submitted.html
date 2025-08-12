@@ -1,19 +1,142 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Thank you</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submitted - Thank You</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .success-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .success-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        .message {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 15px 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            display: inline-block;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: rgba(76, 175, 80, 0.6);
+        }
+        .btn-primary:hover {
+            background: rgba(76, 175, 80, 0.9);
+        }
+        .details {
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 20px 15px; }
+            .success-container { padding: 30px 20px; }
+            h1 { font-size: 1.6em; }
+            .message { font-size: 1.1em; }
+        }
+    </style>
 </head>
-
 <body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Thank You!</h1>
+        <div class="message">
+            Your form submission was successfully received and will be processed automatically.
+        </div>
+        
+        <div class="details" id="submission-details">
+            📅 Submitted: <span id="submit-time"></span>
+        </div>
+        
+        <div class="actions">
+            <a href="javascript:history.back()" class="btn btn-primary">
+                📝 Submit Another Form
+            </a>
+            <a href="/" class="btn">
+                🏠 Return to Main Site
+            </a>
+        </div>
+    </div>
 
-<img src="../images/logo/icon-128.png" align="right" />
-
-<h1>Thank you</h1>
-
-<p>Your form submission was successfully received.</p>
-
-<script>
-    window.scrollTo(0,0);
-</script>
-
+    <script>
+        // Scroll to top
+        window.scrollTo(0,0);
+        
+        // Set current time
+        document.getElementById('submit-time').textContent = new Date().toLocaleString();
+        
+        // Check if this is a hedgehog care form
+        const referrer = document.referrer;
+        if (referrer && (referrer.includes('hedgehog') || referrer.includes('care'))) {
+            document.querySelector('.success-icon').textContent = '🦔✅';
+            document.querySelector('.message').innerHTML = 
+                'Your hedgehog care record was successfully submitted!<br>Weight, photos, and notes have been recorded.';
+            document.querySelector('.btn-primary').innerHTML = '🦔 Record Another Hedgehog';
+        }
+        
+        // Auto-redirect option (commented out - uncomment if needed)
+        // setTimeout(() => {
+        //     if (confirm('Would you like to submit another form?')) {
+        //         history.back();
+        //     }
+        // }, 5000);
+    </script>
 </body>
 </html>
+<!-- Live development test Tue Aug 12 19:15:19 BST 2025 -->
