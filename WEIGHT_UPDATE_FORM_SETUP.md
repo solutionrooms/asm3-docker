@@ -78,12 +78,12 @@ Add the following fields in order:
 
 The form will be available at:
 ```
-http://localhost:8090/onlineform/{form_id}/weight_update
+https://asm.fridaydigital.co.uk/onlineform/{form_id}/weight_update
 ```
 
 Or use the generic form URL:
 ```
-http://localhost:8090/onlineform/weight_update
+https://asm.fridaydigital.co.uk/onlineform/weight_update
 ```
 
 ### Step 5: Test the Form
