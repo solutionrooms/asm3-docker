@@ -1936,17 +1936,24 @@ $.widget("asm.htmleditor", {
     },
 
     refresh: function() {
-        this.options.editor.refresh();
+        if (this.options.editor) {
+            this.options.editor.refresh();
+        }
     },
 
     value: function(newval) {
         if (newval === undefined) {
-            return this.options.editor.getValue();
+            return this.options.editor ? this.options.editor.getValue() : this.element.val();
         }
         if (!newval) { newval = ""; }
-        this.options.editor.setValue(newval);
-        this.options.editor.refresh();
-        this.change();
+        if (this.options.editor) {
+            this.options.editor.setValue(newval);
+            this.options.editor.refresh();
+            this.change();
+        } else {
+            // Editor not ready yet, set value on the textarea directly
+            this.element.val(newval);
+        }
     }
 
 });
@@ -1978,7 +1985,7 @@ $.widget("asm.sqleditor", {
                     },
                     "Ctrl-Space": "autocomplete"
                 },
-                hintOptions: { tables: schema }
+                hintOptions: { tables: (typeof SCHEMA !== 'undefined' ? SCHEMA : {}) }
             });
             // Override height and width if they were set as attributes of the text area
             if (self.element.attr("data-width")) {
@@ -2031,17 +2038,24 @@ $.widget("asm.sqleditor", {
     },
 
     refresh: function() {
-        this.options.editor.refresh();
+        if (this.options.editor) {
+            this.options.editor.refresh();
+        }
     },
 
     value: function(newval) {
         if (newval === undefined) {
-            return this.options.editor.getValue();
+            return this.options.editor ? this.options.editor.getValue() : this.element.val();
         }
         if (!newval) { newval = ""; }
-        this.options.editor.setValue(newval);
-        this.options.editor.refresh();
-        this.change();
+        if (this.options.editor) {
+            this.options.editor.setValue(newval);
+            this.options.editor.refresh();
+            this.change();
+        } else {
+            // Editor not ready yet, set value on the textarea directly
+            this.element.val(newval);
+        }
     }
 
 });

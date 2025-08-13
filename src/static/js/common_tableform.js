@@ -844,10 +844,10 @@ const tableform = {
                 // Any code editor widgets need to be refreshed on load
                 $.each(dialog.fields, function(i, v) {
                     if (v.type == "htmleditor") {
-                        $("#" + v.id).htmleditor("refresh");
+                        $("#" + (v.id || v.post_field)).htmleditor("refresh");
                     }
                     if (v.type == "sqleditor") {
-                        $("#" + v.id).sqleditor("refresh");
+                        $("#" + (v.id || v.post_field)).sqleditor("refresh");
                     }
                 });
                 tableform.dialog_enable_buttons();
@@ -1011,10 +1011,10 @@ const tableform = {
                 // Any code editor widgets need to be refreshed on load
                 $.each(dialog.fields, function(i, v) {
                     if (v.type == "htmleditor") {
-                        $("#" + v.id).htmleditor("refresh");
+                        $("#" + (v.id || v.post_field)).htmleditor("refresh");
                     }
                     if (v.type == "sqleditor") {
-                        $("#" + v.id).sqleditor("refresh");
+                        $("#" + (v.id || v.post_field)).sqleditor("refresh");
                     }
                 });
                 
