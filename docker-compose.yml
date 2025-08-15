@@ -120,6 +120,16 @@ services:
       - asm3_network
     command: >
       sh -c "
+        # Generate config file with environment variables (same as main service)
+        if [ -f /app/asm3.conf ]; then
+          echo 'Generating configuration with environment variables...';
+          envsubst < /app/asm3.conf > /etc/asm3.conf;
+          echo 'Configuration generated for cron service';
+        else
+          echo 'No config file found!';
+          exit 1;
+        fi;
+        
         while true; do
           sleep 3600;
           echo 'Running daily ASM3 maintenance tasks...';
