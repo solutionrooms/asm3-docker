@@ -110,6 +110,7 @@ services:
       - ASM3_USE_SENDMAIL=${ASM3_USE_SENDMAIL:-false}
     volumes:
       - ./asm3.conf:/app/asm3.conf:ro
+      - ./weight_monitor.py:/app/weight_monitor.py:ro
       - asm3_media:/var/lib/asm3/media
       # Mount source code for live development
       - ./src:/app/src:ro
@@ -130,10 +131,23 @@ services:
           exit 1;
         fi;
         
+        # Start weight monitor in background (runs every minute)
+        echo 'Starting weight monitor...';
+        python3 /app/weight_monitor.py &
+        WEIGHT_MONITOR_PID=$$!;
+        
+        # Main cron loop for daily maintenance (runs every hour)
         while true; do
           sleep 3600;
           echo 'Running daily ASM3 maintenance tasks...';
           cd /app/src && python3 cron.py all;
+          
+          # Check if weight monitor is still running, restart if needed
+          if ! kill -0 $$WEIGHT_MONITOR_PID 2>/dev/null; then
+            echo 'Weight monitor stopped, restarting...';
+            python3 /app/weight_monitor.py &
+            WEIGHT_MONITOR_PID=$$!;
+          fi;
         done
       "
 
