@@ -160,7 +160,8 @@ class WeightMonitor:
                 );
             """)
             
-            exists = cursor.fetchone()[0]
+            result = cursor.fetchone()
+            exists = result['exists']
             
             if not exists:
                 self.logger.info("Creating animal_weight_history table")
