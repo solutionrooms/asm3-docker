@@ -265,7 +265,18 @@ edit_header = {
             [ "logs", "animal_log", _("Log"), "log", "vle" ]];
         $.each(tabs, function(it, vt) {
             var key = vt[0], url = vt[1], display = vt[2], iconname = vt[3], perms = vt[4];
-            if (perms && !common.has_permission(perms)) { return; } // don't show if no permission
+            
+            // DEBUG: Log weight_log tab processing
+            if (key == "weight_log") {
+                console.log("WEIGHT_LOG DEBUG: Processing weight_log tab");
+                console.log("WEIGHT_LOG DEBUG: perms=" + perms + ", has_permission=" + common.has_permission(perms));
+                console.log("WEIGHT_LOG DEBUG: selected=" + selected);
+            }
+            
+            if (perms && !common.has_permission(perms)) { 
+                if (key == "weight_log") console.log("WEIGHT_LOG DEBUG: BLOCKED by permissions");
+                return; 
+            } // don't show if no permission
             if ((key == "boarding") && config.bool("DisableBoarding")) { return; }
             if ((key == "boarding") && a.HASACTIVEBOARDING == 0 && a.ARCHIVED == 0) { return; } // don't show boarding tab for non-owned shelter animals
             if ((key == "clinic") && config.bool("DisableClinic")) { return; }
@@ -274,9 +285,11 @@ edit_header = {
             if ((key == "movements") && a.NONSHELTERANIMAL == 1) { return; }
             if ((key == "transport") && config.bool("DisableTransport")) { return; }
             if (key == selected) {
+                if (key == "weight_log") console.log("WEIGHT_LOG DEBUG: Adding SELECTED tab");
                 s += "<li class=\"ui-tabs-selected ui-state-active\"><a href=\"#\">" + display + " " + check_display_icon(key, iconname) + "</a></li>";
             }
             else {
+                if (key == "weight_log") console.log("WEIGHT_LOG DEBUG: Adding UNSELECTED tab");
                 s += "<li><a href=\"" + url + "?id=" + a.ID + "\">" + display + " " + check_display_icon(key, iconname) + "</a></li>";
             }
         });
