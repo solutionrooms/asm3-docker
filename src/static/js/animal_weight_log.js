@@ -133,9 +133,13 @@ $(function() {
         name: "animal_weight_log",
         animation: "book",
         autofocus: "#asm-content button:first",
-        title:  function() { return controller.animal.CODE + " " + controller.animal.ANIMALNAME; },
+        title:  function() { return common.substitute(_("{0} - {1} ({2} {3} aged {4})"), { 
+            0: controller.animal.ANIMALNAME, 1: controller.animal.CODE, 2: controller.animal.SEXNAME,
+            3: controller.animal.SPECIESNAME, 4: controller.animal.ANIMALAGE }); },
         routes: {
-            "animal_weight_log": function() { common.module_loadandstart("animal_weight_log", "animal_weight_log?" + this.rawqs); }
+            "animal_weight_log": function() { 
+                common.module_loadandstart("animal_weight_log", "animal_weight_log?id=" + this.qs.id);
+            }
         }
 
     };
