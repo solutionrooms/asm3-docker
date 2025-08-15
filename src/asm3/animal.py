@@ -3012,7 +3012,8 @@ def get_satellite_counts(dbo: Database, animalid: int) -> Results:
         "(SELECT COUNT(*) FROM log WHERE log.LinkID = a.ID AND log.LinkType = ?) AS logs, " \
         "(SELECT COUNT(*) FROM ownerdonation od WHERE od.AnimalID = a.ID) AS donations, " \
         "(SELECT COUNT(*) FROM ownerlicence ol WHERE ol.AnimalID = a.ID) AS licence, " \
-        "(SELECT COUNT(*) FROM animalcost ac WHERE ac.AnimalID = a.ID) AS costs " \
+        "(SELECT COUNT(*) FROM animalcost ac WHERE ac.AnimalID = a.ID) AS costs, " \
+        "(SELECT COUNT(*) FROM animal_weight_history awh WHERE awh.AnimalID = a.ID) AS weight_log " \
         "FROM animal a WHERE a.ID = ?", \
         (asm3.media.ANIMAL, asm3.diary.ANIMAL, asm3.log.ANIMAL, animalid))
 
@@ -6913,4 +6914,99 @@ def maintenance_animal_figures(dbo: Database, includeMonths: bool = True, includ
         for y in years:
             asm3.al.debug("update_animal_figures_annual: year=%d" % y.theyear, "animal.maintenance_animal_figures", dbo)
             update_animal_figures_annual(dbo, y.theyear)
+
+def get_weight_history(dbo: Database, animalid: int) -> Results:
+    """
+    Returns weight history records for the given animal from animal_weight_history table
+    """
+    return dbo.query("SELECT awh.ID, awh.AnimalID, awh.weight_date AS WEIGHT_DATE, awh.username AS USERNAME, " \
+        "awh.weight AS WEIGHT, awh.created_date AS CREATED_DATE " \
+        "FROM animal_weight_history awh " \
+        "WHERE awh.AnimalID = ? " \
+        "ORDER BY awh.weight_date DESC", [animalid])
+
+def insert_weight_history_from_form(dbo: Database, username: str, post: PostedData) -> int:
+    """
+    Creates a weight history record from posted form data
+    """
+    animalid = post.integer("animalid")
+    weight_date = post.date("weightdate")
+    weight = post.floating("weight")
+    weightunit = post["weightunit"]
+    
+    if weight_date is None:
+        raise asm3.utils.ASMValidationError(_("Weight date cannot be blank."))
+    if weight is None or weight <= 0:
+        raise asm3.utils.ASMValidationError(_("Weight must be a positive number."))
+    
+    # Convert weight to kg if entered in lbs
+    if weightunit == "lb":
+        weight = weight / 2.20462
+    
+    nid = dbo.insert("animal_weight_history", {
+        "AnimalID":         animalid,
+        "weight_date":      weight_date,
+        "username":         username,
+        "weight":           weight,
+        "created_date":     dbo.now()
+    }, username, setRecordVersion=False)
+    
+    # Update the animal's current weight
+    dbo.update("animal", animalid, {
+        "Weight": weight
+    }, username)
+    
+    return nid
+
+def update_weight_history_from_form(dbo: Database, username: str, post: PostedData) -> None:
+    """
+    Updates a weight history record from posted form data
+    """
+    weightid = post.integer("weightid")
+    weight_date = post.date("weightdate")
+    weight = post.floating("weight")
+    weightunit = post["weightunit"]
+    
+    if weight_date is None:
+        raise asm3.utils.ASMValidationError(_("Weight date cannot be blank."))
+    if weight is None or weight <= 0:
+        raise asm3.utils.ASMValidationError(_("Weight must be a positive number."))
+    
+    # Convert weight to kg if entered in lbs
+    if weightunit == "lb":
+        weight = weight / 2.20462
+    
+    dbo.update("animal_weight_history", weightid, {
+        "weight_date":      weight_date,
+        "weight":           weight
+    }, username, setRecordVersion=False)
+    
+    # Update the animal's current weight if this is the most recent entry
+    animalid = dbo.query_int("SELECT AnimalID FROM animal_weight_history WHERE ID = ?", [weightid])
+    latest_weight = dbo.query("SELECT weight FROM animal_weight_history WHERE AnimalID = ? ORDER BY weight_date DESC LIMIT 1", [animalid])
+    if latest_weight and len(latest_weight) > 0:
+        dbo.update("animal", animalid, {
+            "Weight": latest_weight[0].WEIGHT
+        }, username)
+
+def delete_weight_history(dbo: Database, username: str, weightid: int) -> None:
+    """
+    Deletes a weight history record
+    """
+    # Get the animalid before deleting
+    animalid = dbo.query_int("SELECT AnimalID FROM animal_weight_history WHERE ID = ?", [weightid])
+    
+    dbo.delete("animal_weight_history", weightid, username)
+    
+    # Update the animal's current weight to the most recent remaining entry
+    latest_weight = dbo.query("SELECT weight FROM animal_weight_history WHERE AnimalID = ? ORDER BY weight_date DESC LIMIT 1", [animalid])
+    if latest_weight and len(latest_weight) > 0:
+        dbo.update("animal", animalid, {
+            "Weight": latest_weight[0].WEIGHT
+        }, username)
+    else:
+        # No weight history remains, set weight to 0
+        dbo.update("animal", animalid, {
+            "Weight": 0
+        }, username)
 

@@ -2050,6 +2050,37 @@ class animal_costs(JSONEndpoint):
         for cid in o.post.integer_list("ids"):
             asm3.animal.delete_cost(o.dbo, o.user, cid)
 
+class animal_weight_log(JSONEndpoint):
+    url = "animal_weight_log"
+    get_permissions = asm3.users.VIEW_ANIMAL
+
+    def controller(self, o):
+        dbo = o.dbo
+        animalid = o.post.integer("id")
+        a = asm3.animal.get_animal(dbo, animalid)
+        if a is None: self.notfound()
+        self.check_animal(a)
+        weight_history = asm3.animal.get_weight_history(dbo, animalid)
+        asm3.al.debug("got %d weight entries for animal %s %s" % (len(weight_history), a["CODE"], a["ANIMALNAME"]), "main.animal_weight_log", dbo)
+        return {
+            "rows": weight_history,
+            "animal": a,
+            "tabcounts": asm3.animal.get_satellite_counts(dbo, animalid)[0]
+        }
+
+    def post_create(self, o):
+        self.check(asm3.users.VIEW_ANIMAL)
+        return asm3.animal.insert_weight_history_from_form(o.dbo, o.user, o.post)
+
+    def post_update(self, o):
+        self.check(asm3.users.VIEW_ANIMAL)
+        asm3.animal.update_weight_history_from_form(o.dbo, o.user, o.post)
+
+    def post_delete(self, o):
+        self.check(asm3.users.VIEW_ANIMAL)
+        for wid in o.post.integer_list("ids"):
+            asm3.animal.delete_weight_history(o.dbo, o.user, wid)
+
 class animal_diary(JSONEndpoint):
     url = "animal_diary"
     js_module = "diary"

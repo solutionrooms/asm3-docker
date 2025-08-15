@@ -520,6 +520,25 @@ $(function() {
             return h.join("\n");
         },
 
+        render_weight_log: function() {
+            
+            if (!controller.tabcounts || controller.tabcounts.WEIGHT_LOG == 0) {
+                return;
+            }
+            
+            let h = [
+                '<h3><a href="#">' + _("Weight Log") + ' <span class="asm-icon asm-icon-health"></span></a></h3>',
+                '<div>',
+                '<div class="ui-state-highlight ui-corner-all" style="margin-top: 5px; padding: 0 .7em;">',
+                '<p><span class="ui-icon ui-icon-info"></span>',
+                _("Click the Weight Log tab above to view and manage the weight history for this animal"),
+                '</p>',
+                '</div>',
+                '</div>'
+            ];
+            return h.join("\n");
+        },
+
         /**
          * Render the animal details screen
          */
@@ -597,6 +616,7 @@ $(function() {
                 this.render_incidents(),
                 this.render_events(),
                 this.render_publish_history(),
+                this.render_weight_log(),
                 this.render_links(),
                 html.audit_trail_accordion(controller),
                 '</div>', // accordion
