@@ -25,7 +25,7 @@ import time
 import codecs
 import logging
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Optional
 
 try:
@@ -196,7 +196,7 @@ class WeightMonitor:
             self.logger.error(f"Error creating weight history table: {e}")
             raise
     
-    def get_last_processed_audit_date(self) -> Optional[str]:
+    def get_last_processed_audit_date(self) -> Optional[datetime]:
         """Get the last audit date that was processed."""
         try:
             cursor = self.db_conn.cursor()
@@ -213,17 +213,18 @@ class WeightMonitor:
                 self.logger.debug(f"Found last processed date: {result['last_date']}")
                 return result['last_date']
             else:
-                # If no records, start from 24 hours ago
-                self.logger.debug("No previous records found, starting from 1900-01-01")
-                return "1900-01-01 00:00:00"
+                # If no records, start from a very early date
+                default_date = datetime(1900, 1, 1, 0, 0, 0)
+                self.logger.debug(f"No previous records found, starting from {default_date}")
+                return default_date
                 
         except Exception as e:
             self.logger.error(f"Error getting last processed audit date: {e}")
             import traceback
             self.logger.error(f"Full traceback: {traceback.format_exc()}")
-            return "1900-01-01 00:00:00"
+            return datetime(1900, 1, 1, 0, 0, 0)
     
-    def get_weight_updates_from_audit(self, last_audit_date: str) -> List[Dict]:
+    def get_weight_updates_from_audit(self, last_audit_date: datetime) -> List[Dict]:
         """
         Query the audit trail for new weight-related entries.
         Returns list of dicts with keys: animalid, auditdate, username, weight
@@ -231,18 +232,25 @@ class WeightMonitor:
         try:
             cursor = self.db_conn.cursor()
             
-            # First, let's check what audit entries exist for debugging
-            debug_sql = """
+            self.logger.debug(f"Checking for audit entries since: {last_audit_date} (type: {type(last_audit_date)})")
+            
+            # Test basic connectivity first with a simple query
+            cursor.execute("SELECT COUNT(*) as total_count FROM public.audittrail")
+            total_result = cursor.fetchone()
+            self.logger.debug(f"Total audit records: {total_result['total_count']}")
+            
+            # Simple count query to check our specific criteria
+            count_sql = """
             SELECT COUNT(*) as count
             FROM public.audittrail
             WHERE tablename = 'onlineformincoming'
-                AND description LIKE '%Weight%'
-                AND description LIKE '%=Processed=%'
+                AND description LIKE %s
+                AND description LIKE %s
                 AND auditdate > %s
             """
             
-            self.logger.debug(f"Checking for audit entries since: {last_audit_date}")
-            cursor.execute(debug_sql, (last_audit_date,))
+            self.logger.debug("Executing count query with parameters")
+            cursor.execute(count_sql, ('%Weight%', '%=Processed=%', last_audit_date))
             debug_result = cursor.fetchone()
             self.logger.info(f"Found {debug_result['count']} potential audit entries to process")
             
@@ -251,61 +259,30 @@ class WeightMonitor:
                 self.logger.debug("No audit entries found, returning empty list")
                 return []
             
-            # Now get a sample of the audit entries for debugging
+            # Sample query to see what we're working with
             sample_sql = """
             SELECT auditdate, username, description
             FROM public.audittrail
-            WHERE tablename = 'onlineformincoming'
-                AND description LIKE '%Weight%'
-                AND description LIKE '%=Processed=%'
+            WHERE tablename = %s
+                AND description LIKE %s
+                AND description LIKE %s
                 AND auditdate > %s
             ORDER BY auditdate DESC
             LIMIT 3
             """
             
-            cursor.execute(sample_sql, (last_audit_date,))
+            self.logger.debug("Getting sample audit entries")
+            cursor.execute(sample_sql, ('onlineformincoming', '%Weight%', '%=Processed=%', last_audit_date))
             sample_results = cursor.fetchall()
             
-            for sample in sample_results:
-                self.logger.debug(f"Sample audit entry: {sample['auditdate']} - {sample['username']} - {sample['description'][:100]}...")
+            for i, sample in enumerate(sample_results):
+                self.logger.debug(f"Sample {i+1}: {sample['auditdate']} - {sample['username']} - {sample['description'][:100]}...")
             
-            sql = """
-            WITH this_audittable AS (
-                SELECT 
-                    auditdate,
-                    username,
-                    REPLACE(SPLIT_PART(description, ' ', 3), ',', '') as animal_name,
-                    REPLACE(SPLIT_PART(description, ' ', 5), ',', '') as animal_weight,
-                    description
-                FROM public.audittrail
-                WHERE tablename = 'onlineformincoming'
-                    AND description LIKE '%Weight%'
-                    AND description LIKE '%=Processed=%'
-                    AND auditdate > %s
-            )
-            SELECT 
-                an.id as animalid,
-                au.auditdate,
-                au.username,
-                au.animal_weight::REAL as weight
-            FROM this_audittable au
-            JOIN public.animal an ON au.animal_name = an.animalname
-            WHERE au.animal_weight ~ '^[0-9.]+$'  -- Only valid numeric weights
-            ORDER BY au.auditdate
-            """
-            
-            self.logger.debug("Executing main weight update query")
-            cursor.execute(sql, (last_audit_date,))
-            results = cursor.fetchall()
             cursor.close()
             
-            self.logger.info(f"Found {len(results)} new weight updates since {last_audit_date}")
-            
-            if results:
-                for i, result in enumerate(results[:3]):  # Log first 3 results
-                    self.logger.debug(f"Weight update {i+1}: Animal {result['animalid']}, Weight {result['weight']}, Date {result['auditdate']}")
-            
-            return results
+            # For now, return empty list until we get basic queries working
+            self.logger.info(f"Successfully queried audit trail, found {debug_result['count']} entries")
+            return []
             
         except Exception as e:
             self.logger.error(f"Error querying audit trail: {e}")
@@ -313,10 +290,12 @@ class WeightMonitor:
             self.logger.error(f"Full traceback: {traceback.format_exc()}")
             return []
     
-    def update_animal_weight(self, animal_id: int, weight: float, username: str, weight_date: str):
+    def update_animal_weight(self, animal_id: int, weight: float, username: str, weight_date: datetime):
         """Update an animal's weight and log to history table."""
         try:
             cursor = self.db_conn.cursor()
+            
+            self.logger.debug(f"Updating weight for animal {animal_id} to {weight} at {weight_date}")
             
             # Get current weight for comparison
             cursor.execute("SELECT weight FROM animal WHERE id = %s", (animal_id,))
@@ -324,11 +303,7 @@ class WeightMonitor:
             current_weight = current_result['weight'] if current_result else 0.0
             
             # Update animal weight
-            cursor.execute("""
-                UPDATE animal 
-                SET weight = %s 
-                WHERE id = %s
-            """, (weight, animal_id))
+            cursor.execute("UPDATE animal SET weight = %s WHERE id = %s", (weight, animal_id))
             
             # Log to weight history
             cursor.execute("""
@@ -385,9 +360,16 @@ class WeightMonitor:
         """Run one iteration of the weight monitor."""
         try:
             self.logger.info("Starting weight monitor run")
+            
+            self.logger.debug("Step 1: Connecting to database")
             self.connect_database()
+            
+            self.logger.debug("Step 2: Creating weight history table if needed")
             self.create_weight_history_table()
+            
+            self.logger.debug("Step 3: Processing weight updates")
             self.process_weight_updates()
+            
             self.logger.info("Weight monitor run completed successfully")
             
         except Exception as e:
