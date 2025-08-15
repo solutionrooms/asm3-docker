@@ -18,10 +18,7 @@ $(function() {
                     { json_field: "WEIGHT_DATE", post_field: "weightdate", label: _("Date"), type: "date", validation: "notblank", defaultval: new Date() },
                     { json_field: "WEIGHT", post_field: "weight", label: _("Weight"), type: "number", validation: "notblank" },
                     { post_field: "weightunit", label: _("Unit"), type: "select", 
-                        options: [
-                            { value: "kg", text: _("kg") },
-                            { value: "lb", text: _("lb") }
-                        ],
+                        options: "kg|" + _("kg") + "||lb|" + _("lb"),
                         defaultval: config.str("ShowWeightInLbs") == "Yes" ? "lb" : "kg"
                     },
                     { json_field: "USERNAME", post_field: "username", label: _("Recorded by"), type: "text", readonly: true }
@@ -122,8 +119,7 @@ $(function() {
         },
 
         sync: function() {
-            // If we have just returned from the parent animal screen, update our reference
-            controller.animal = common.current_url_param("animal");
+            // No special sync needed for weight log
         },
 
         destroy: function() {
