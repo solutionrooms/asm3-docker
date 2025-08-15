@@ -103,12 +103,15 @@ class WeightMonitor:
         # In Docker, prefer stdout logging
         log_handlers = [logging.StreamHandler(sys.stdout)]
         
-        # Only add file logging if we can write to the directory
-        try:
-            log_handlers.append(logging.FileHandler('weight_monitor.log'))
-        except (PermissionError, FileNotFoundError):
-            # In Docker, we might not have write permissions
-            pass
+        # Try to add file logging to a writable location
+        writable_paths = ['/tmp/weight_monitor.log', '/var/log/weight_monitor.log', './weight_monitor.log']
+        
+        for log_path in writable_paths:
+            try:
+                log_handlers.append(logging.FileHandler(log_path))
+                break  # Success, use this path
+            except (PermissionError, FileNotFoundError, OSError):
+                continue  # Try next path
         
         logging.basicConfig(
             level=logging.INFO,
