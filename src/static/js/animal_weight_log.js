@@ -101,13 +101,17 @@ $(function() {
         },
 
         render: function() {
+            console.log("WEIGHT_LOG: render() called");
+            console.log("WEIGHT_LOG: controller=", controller);
             let m = this.model();
+            console.log("WEIGHT_LOG: model=", m);
             let s = html.content_header(controller.animal.CODE + " " + controller.animal.ANIMALNAME);
             s += tableform.dialog_render(m.dialog);
             s += edit_header.animal_edit_header(controller.animal, "weight_log", controller.tabcounts);
             s += tableform.buttons_render(m.buttons);
             s += tableform.table_render(m.table);
             s += html.content_footer();
+            console.log("WEIGHT_LOG: rendered HTML length=", s.length);
             return s;
         },
 
