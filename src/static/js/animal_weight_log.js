@@ -50,9 +50,9 @@ $(function() {
                     { field: "WEIGHT_DATE", display: _("Date"), initialsort: true, initialsortdirection: "desc", formatter: tableform.format_date },
                     { field: "WEIGHT", display: _("Weight"), formatter: function(row) {
                         if (config.str("ShowWeightInLbs") == "Yes") {
-                            return format.number((row.WEIGHT * 2.20462).toFixed(1)) + " lb";
+                            return (row.WEIGHT * 2.20462).toFixed(1) + " lb";
                         } else {
-                            return format.number(row.WEIGHT) + " kg";
+                            return row.WEIGHT.toFixed(1) + " kg";
                         }
                     }},
                     { field: "USERNAME", display: _("Recorded by") },
