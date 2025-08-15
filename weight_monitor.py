@@ -339,22 +339,22 @@ class WeightMonitor:
             current_result = cursor.fetchone()
             current_weight = current_result['weight'] if current_result else 0.0
             
-            # Convert weight to grams if entered in kilograms (weight <= 10 assumed to be kg)
-            weight_in_grams = weight if weight > 10 else weight * 1000
+            # Convert weight to kilograms if entered in grams (weight > 10 assumed to be grams)
+            weight_in_kg = weight / 1000 if weight > 10 else weight
             
-            # Update animal weight (ASM3 stores in grams)
-            cursor.execute("UPDATE animal SET weight = %s WHERE id = %s", (int(weight_in_grams), animal_id))
+            # Update animal weight (ASM3 stores in kilograms)
+            cursor.execute("UPDATE animal SET weight = %s WHERE id = %s", (weight_in_kg, animal_id))
             
-            # Log to weight history (store original weight value for history tracking)
+            # Log to weight history (store in kilograms)
             cursor.execute("""
                 INSERT INTO animal_weight_history 
                 (animalid, weight_date, username, weight)
                 VALUES (%s, %s, %s, %s)
-            """, (animal_id, weight_date, username, weight_in_grams))
+            """, (animal_id, weight_date, username, weight_in_kg))
             
             cursor.close()
             
-            self.logger.info(f"Updated animal {animal_id}: weight {current_weight} -> {weight_in_grams}g by {username}")
+            self.logger.info(f"Updated animal {animal_id}: weight {current_weight} -> {weight_in_kg}kg by {username}")
             
         except Exception as e:
             self.logger.error(f"Error updating animal {animal_id} weight: {e}")
