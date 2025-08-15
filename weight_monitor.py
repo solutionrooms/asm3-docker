@@ -278,11 +278,48 @@ class WeightMonitor:
             for i, sample in enumerate(sample_results):
                 self.logger.debug(f"Sample {i+1}: {sample['auditdate']} - {sample['username']} - {sample['description'][:100]}...")
             
+            # Now execute the full query to get weight updates
+            main_sql = """
+            WITH parsed_audit AS (
+                SELECT 
+                    auditdate,
+                    username,
+                    description,
+                    -- Extract animal name: everything between "Animal: " and the next comma
+                    TRIM(SUBSTRING(description FROM 'Animal: ([^,]+)')) as animal_name,
+                    -- Extract weight: everything between "Weight: " and the next comma or end
+                    TRIM(SUBSTRING(description FROM 'Weight: ([^,\\s]+)')) as animal_weight_text
+                FROM public.audittrail
+                WHERE tablename = %s
+                    AND description LIKE %s
+                    AND description LIKE %s
+                    AND auditdate > %s
+            )
+            SELECT 
+                an.id as animalid,
+                pa.auditdate,
+                pa.username,
+                pa.animal_weight_text::REAL as weight,
+                pa.description
+            FROM parsed_audit pa
+            JOIN public.animal an ON LOWER(pa.animal_name) = LOWER(an.animalname)
+            WHERE pa.animal_weight_text ~ '^[0-9.]+$'  -- Only valid numeric weights
+                AND pa.animal_weight_text::REAL > 0    -- Only positive weights
+            ORDER BY pa.auditdate
+            """
+            
+            self.logger.debug("Executing main weight processing query")
+            cursor.execute(main_sql, ('onlineformincoming', '%Weight%', '%=Processed=%', last_audit_date))
+            results = cursor.fetchall()
             cursor.close()
             
-            # For now, return empty list until we get basic queries working
-            self.logger.info(f"Successfully queried audit trail, found {debug_result['count']} entries")
-            return []
+            self.logger.info(f"Successfully parsed {len(results)} weight updates from {debug_result['count']} audit entries")
+            
+            if results:
+                for i, result in enumerate(results[:3]):  # Log first 3 results
+                    self.logger.debug(f"Weight update {i+1}: Animal {result['animalid']} ({result['weight']}g) on {result['auditdate']}")
+            
+            return results
             
         except Exception as e:
             self.logger.error(f"Error querying audit trail: {e}")
@@ -302,8 +339,8 @@ class WeightMonitor:
             current_result = cursor.fetchone()
             current_weight = current_result['weight'] if current_result else 0.0
             
-            # Update animal weight
-            cursor.execute("UPDATE animal SET weight = %s WHERE id = %s", (weight, animal_id))
+            # Update animal weight (convert to kilograms if needed - ASM3 typically stores in grams)
+            cursor.execute("UPDATE animal SET weight = %s WHERE id = %s", (int(weight), animal_id))
             
             # Log to weight history
             cursor.execute("""
