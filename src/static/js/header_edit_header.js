@@ -260,6 +260,7 @@ edit_header = {
             [ "media", "animal_media", _("Media"), "media", "vam" ],
             [ "diary", "animal_diary", _("Diary"), "diary", "vdn" ],
             [ "transport", "animal_transport", _("Transport"), "transport", "vtr" ],
+            [ "weight_log", "animal_weight_log", _("Weight Log"), "health", "va" ],
             [ "movements", "animal_movements", _("Movements"), "movement", "vamv" ],
             [ "logs", "animal_log", _("Log"), "log", "vle" ]];
         $.each(tabs, function(it, vt) {
