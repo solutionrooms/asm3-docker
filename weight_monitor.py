@@ -242,7 +242,7 @@ class WeightMonitor:
             """
             
             self.logger.debug(f"Checking for audit entries since: {last_audit_date}")
-            cursor.execute(debug_sql, (last_audit_date,))
+            cursor.execute(debug_sql, [last_audit_date])
             debug_result = cursor.fetchone()
             self.logger.info(f"Found {debug_result['count']} potential audit entries to process")
             
@@ -263,7 +263,7 @@ class WeightMonitor:
             LIMIT 3
             """
             
-            cursor.execute(sample_sql, (last_audit_date,))
+            cursor.execute(sample_sql, [last_audit_date])
             sample_results = cursor.fetchall()
             
             for sample in sample_results:
@@ -295,7 +295,7 @@ class WeightMonitor:
             """
             
             self.logger.debug("Executing main weight update query")
-            cursor.execute(sql, (last_audit_date,))
+            cursor.execute(sql, [last_audit_date])
             results = cursor.fetchall()
             cursor.close()
             
@@ -319,7 +319,7 @@ class WeightMonitor:
             cursor = self.db_conn.cursor()
             
             # Get current weight for comparison
-            cursor.execute("SELECT weight FROM animal WHERE id = %s", (animal_id,))
+            cursor.execute("SELECT weight FROM animal WHERE id = %s", [animal_id])
             current_result = cursor.fetchone()
             current_weight = current_result['weight'] if current_result else 0.0
             
@@ -328,14 +328,14 @@ class WeightMonitor:
                 UPDATE animal 
                 SET weight = %s 
                 WHERE id = %s
-            """, (weight, animal_id))
+            """, [weight, animal_id])
             
             # Log to weight history
             cursor.execute("""
                 INSERT INTO animal_weight_history 
                 (animalid, weight_date, username, weight)
                 VALUES (%s, %s, %s, %s)
-            """, (animal_id, weight_date, username, weight))
+            """, [animal_id, weight_date, username, weight])
             
             cursor.close()
             
