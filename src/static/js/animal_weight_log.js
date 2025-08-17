@@ -3,6 +3,9 @@
 $(function() {
 
     "use strict";
+    
+    // Weight Log Module Version
+    const WEIGHT_LOG_VERSION = "1.6.0";
 
     const animal_weight_log = {
 
@@ -28,6 +31,7 @@ $(function() {
             const table = {
                 rows: controller.rows,
                 idcolumn: "ID",
+                multiselect: true,
                 edit: async function(row) {
                     await tableform.dialog_show_edit(dialog, row, {
                         onload: function() {
@@ -50,9 +54,9 @@ $(function() {
                     { field: "WEIGHT_DATE", display: _("Date"), initialsort: true, initialsortdirection: "desc", formatter: tableform.format_date },
                     { field: "WEIGHT", display: _("Weight"), formatter: function(row) {
                         if (config.str("ShowWeightInLbs") == "Yes") {
-                            return (row.WEIGHT * 2.20462).toFixed(1) + " lb";
+                            return (row.WEIGHT * 2.20462).toFixed(3) + " lb";
                         } else {
-                            return row.WEIGHT.toFixed(1) + " kg";
+                            return row.WEIGHT.toFixed(3) + " kg";
                         }
                     }},
                     { field: "USERNAME", display: _("Recorded by") },
@@ -93,41 +97,62 @@ $(function() {
                 }
             ];
 
-            return {
-                dialog: dialog,
-                table: table, 
-                buttons: buttons
-            };
+            this.dialog = dialog;
+            this.table = table;
+            this.buttons = buttons;
         },
 
         render: function() {
-            console.log("WEIGHT_LOG: render() called");
-            console.log("WEIGHT_LOG: controller=", controller);
-            let m = this.model();
-            console.log("WEIGHT_LOG: model=", m);
-            let s = html.content_header(controller.animal.CODE + " " + controller.animal.ANIMALNAME);
-            s += tableform.dialog_render(m.dialog);
-            s += edit_header.animal_edit_header(controller.animal, "weight_log", controller.tabcounts);
-            s += tableform.buttons_render(m.buttons);
-            s += tableform.table_render(m.table);
-            s += html.content_footer();
-            console.log("WEIGHT_LOG: rendered HTML length=", s.length);
-            return s;
+            try {
+                console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Rendering weight log for animal ${controller.animal.ID}`);
+                console.log(`[WEIGHT_LOG] Available data:`, controller.rows ? controller.rows.length + " rows" : "No rows data");
+                
+                this.model();
+                let s = "";
+                s += tableform.dialog_render(this.dialog);
+                s += edit_header.animal_edit_header(controller.animal, "weight_log", controller.tabcounts);
+                s += tableform.buttons_render(this.buttons);
+                s += tableform.table_render(this.table);
+                s += html.content_footer();
+                
+                console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Render completed successfully, HTML length: ${s.length}`);
+                return s;
+            } catch (err) {
+                console.error(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Error rendering weight log:`, err);
+                return "<p>Error loading weight log</p>";
+            }
         },
 
         bind: function() {
-            $(".asm-tabbar").asmtabs();
-            tableform.dialog_bind(this.model().dialog);
-            tableform.buttons_bind(this.model().buttons);
-            tableform.table_bind(this.model().table);
+            try {
+                console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Binding weight log events`);
+                $(".asm-tabbar").asmtabs();
+                tableform.dialog_bind(this.dialog);
+                tableform.buttons_bind(this.buttons);
+                tableform.table_bind(this.table, this.buttons);
+                console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Bind completed successfully`);
+            } catch (err) {
+                console.error(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Error binding weight log:`, err);
+            }
         },
 
         sync: function() {
-            // No special sync needed for weight log
+            try {
+                // Reload data if needed  
+                if (controller && controller.rows) {
+                    tableform.table_update(this.table);
+                }
+            } catch (err) {
+                console.error("Error syncing weight log:", err);
+            }
         },
 
         destroy: function() {
-            common.widget_destroy("#animal");
+            try {
+                tableform.dialog_destroy();
+            } catch (err) {
+                console.error("Error destroying weight log:", err);
+            }
         },
 
         name: "animal_weight_log",
@@ -138,6 +163,7 @@ $(function() {
             3: controller.animal.SPECIESNAME, 4: controller.animal.ANIMALAGE }); },
         routes: {
             "animal_weight_log": function() { 
+                console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Loading weight log module for animal ID: ${this.qs.id}`);
                 common.module_loadandstart("animal_weight_log", "animal_weight_log?id=" + this.qs.id);
             }
         }
@@ -145,5 +171,8 @@ $(function() {
     };
 
     common.module_register(animal_weight_log);
+    
+    // Log module registration with version
+    console.log(`[WEIGHT_LOG] Version ${WEIGHT_LOG_VERSION} - Module registered successfully`);
 
 });

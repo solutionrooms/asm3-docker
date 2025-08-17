@@ -3,6 +3,8 @@
 ASM3 Weight Monitor
 ==================
 
+VERSION: 1.1.0
+
 A standalone process that monitors the audittrail table for weight updates
 from online form processing and:
 1. Updates the animal's weight in the animal table
@@ -18,6 +20,9 @@ Configuration:
     Reads database configuration from asm3.conf (same as main ASM3 application)
     Or set environment variables: ASM3_CONF to point to config file
 """
+
+# Weight Monitor Version
+WEIGHT_MONITOR_VERSION = "1.1.0"
 
 import os
 import sys
@@ -399,7 +404,8 @@ class WeightMonitor:
     def run_once(self):
         """Run one iteration of the weight monitor."""
         try:
-            self.logger.info("Starting weight monitor run")
+            self.logger.info(f"Starting weight monitor run - Version {WEIGHT_MONITOR_VERSION}")
+            print(f"[WEIGHT_MONITOR] Version {WEIGHT_MONITOR_VERSION} - Starting run at {datetime.now()}")
             
             self.logger.debug("Step 1: Connecting to database")
             self.connect_database()
@@ -410,7 +416,8 @@ class WeightMonitor:
             self.logger.debug("Step 3: Processing weight updates")
             self.process_weight_updates()
             
-            self.logger.info("Weight monitor run completed successfully")
+            self.logger.info(f"Weight monitor run completed successfully - Version {WEIGHT_MONITOR_VERSION}")
+            print(f"[WEIGHT_MONITOR] Version {WEIGHT_MONITOR_VERSION} - Run completed at {datetime.now()}")
             
         except Exception as e:
             self.logger.error(f"Error in run_once: {e}")
@@ -424,7 +431,8 @@ class WeightMonitor:
     
     def run_continuous(self):
         """Run the weight monitor continuously, checking every minute."""
-        self.logger.info("Starting ASM3 Weight Monitor - checking every 60 seconds")
+        self.logger.info(f"Starting ASM3 Weight Monitor - Version {WEIGHT_MONITOR_VERSION} - checking every 60 seconds")
+        print(f"[WEIGHT_MONITOR] Version {WEIGHT_MONITOR_VERSION} - Starting continuous monitoring")
         
         while True:
             try:
